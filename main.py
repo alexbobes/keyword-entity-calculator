@@ -1,5 +1,4 @@
 import json
-from tracemalloc import stop
 import dotenv
 import requests
 from bs4 import BeautifulSoup
