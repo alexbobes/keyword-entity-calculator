@@ -14,17 +14,34 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # load from external csv
-# excsv = requests.get('CSV_URL').content
+# excsv = requests.get(os.environ.get('EXTERNAL_CSV')).content
 # crawldf = pd.read_csv(io.StringIO(excsv.decode('utf-8')))
 # addresses = crawldf['Address'].tolist()
 
 # load from internal csv
-# crawldf = pd.read_csv('LOCAL_PATH_TO_CSV') 
+# crawldf = pd.read_csv(os.environ.get('LOCAL_CSV')) 
 # addresses = crawldf['Address'].tolist()
 
 # load from python list
-addresses = ['']
+# addresses = [os.environ.get('PYTHON_LIST')]
 
+# load from xml sitemap
+xmlDict = {}
+
+def get_urls_of_xml(xml_url):
+    r = requests.get(xml_url)
+    xml = r.text
+    soup = BeautifulSoup(xml)
+
+    links_arr = []
+    for link in soup.findAll('loc'):
+        linkstr = link.getText('', True)
+        links_arr.append(linkstr)
+
+    return links_arr
+
+addresses = get_urls_of_xml(os.environ.get('XML_SITEMAP'))
+ 
 ua = UserAgent()
  
 headers = {
