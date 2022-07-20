@@ -1,22 +1,29 @@
+import json
+from tracemalloc import stop
+import dotenv
 import requests
 from bs4 import BeautifulSoup
 from collections import Counter
 import pandas as pd
 import time
 import io
+import os
 from fake_useragent import UserAgent
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # load from external csv
-excsv = requests.get('CSV_URL').content
-crawldf = pd.read_csv(io.StringIO(excsv.decode('utf-8')))
-addresses = crawldf['Address'].tolist()
+# excsv = requests.get('CSV_URL').content
+# crawldf = pd.read_csv(io.StringIO(excsv.decode('utf-8')))
+# addresses = crawldf['Address'].tolist()
 
 # load from internal csv
 # crawldf = pd.read_csv('LOCAL_PATH_TO_CSV') 
 # addresses = crawldf['Address'].tolist()
 
 # load from python list
-# addresses = ['URL1','URL2','URL3']
+addresses = ['']
 
 ua = UserAgent()
  
@@ -25,8 +32,8 @@ headers = {
 }
 
 def gkbAPI(keyword):
-    url = "https://kgsearch.googleapis.com/v1/entities:search?query="+keyword+"&key=YOUR_API_KEY&limit=1&indent=True"
-
+    url = "https://kgsearch.googleapis.com/v1/entities:search?query="+keyword+"&key="+os.environ.get('API_KEY')+"&limit=1&indent=True"
+    
     payload = {}
     headers = {}
 
@@ -72,23 +79,24 @@ for row in addresses:
     ban_chars = ['|','/','&']
     
     for t in text:
-    if t.parent.name not in blacklist:
-        output += t.replace("\n","").replace("\t","")
-    output = output.split(" ")
+        if t.parent.name not in blacklist:
+            output += t.replace("\n","").replace("\t","")
+        output_final = output.split(" ")
     
-    output = [x for x in output if not x=='' and not x[0] =='#' and x not in ban_chars] 
-    output = [x.lower() for x in output]
-    output = [word for word in output if word not in stopwords]
+    output_final = [x for x in output_final if not x=='' and not x[0] =='#' and x not in ban_chars] 
+    output_final = [x.lower() for x in output_final]
+    output_final = [word for word in output_final if word not in stopwords]
 
-    fulllist += output
+    fulllist = []
+    fulllist += output_final
     
-    counts = Counter(output).most_common(10)
+    counts = Counter(output_final).most_common(10)
     
     for key, value in counts:
-    getlabels = gkbAPI(key)
-    strgetlabels = ', '.join(getlabels)
-    readout = str(key) + ": {:>0}" + " | Entity Labels: " + strgetlabels 
-    print(readout.format(str(value)))
+        getlabels = gkbAPI(key)
+        strgetlabels = ', '.join(getlabels)
+        readout = str(key) + ": {:>0}" + " | Entity Labels: " + strgetlabels 
+        print(readout.format(str(value)))
     print("\n")
     
     print("-------- AGGREGATE COUNT -------")
