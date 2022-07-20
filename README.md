@@ -1,3 +1,3 @@
 # keyword-entity-calculator
 
-Calculate top most used SEO keywords and clasify them based on entities.
+Keyword Density and Entity Calculator using Python + Google Knowledge Graph API
